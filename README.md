@@ -1,6 +1,4 @@
-Apologies for the confusion earlier. Here's the `README.md` code you can copy directly:
 
-```markdown
 # Food Lens - Recipe Recommendation System
 
 Food Lens is an AI-powered recipe recommendation system that suggests similar recipes based on an uploaded image. By analyzing the image, it retrieves the recipe details and provides nutritional information, preparation instructions, and the link to the original recipe.
