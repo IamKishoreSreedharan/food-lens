@@ -11,30 +11,36 @@
 - **Efficient Search**: Utilizes FAISS for fast nearest-neighbor search in a 128-D latent space (`embeddings.npy`).
 
 ## Project Structure
+## Project Structure
 
-food-lens/
-├── data/                   # Datasets
-│   ├── images/             # 45K+ recipe images
-│   ├── recipes.csv         # Raw recipe data
-│   └── recipes_classified.csv # Labeled dataset
-│
-├── foodlens/models/        # ML models
-│   ├── cbir_autoencoder_V2.pth  # CBIR model
-│   ├── classifier_model_keras   # Diet classifier  
-│   └── embeddings.npy      # Precomputed embeddings
-│
-├── src/
-│   ├── back-end/           # FastAPI code
-│   └── front-end/          # Web interface
-│
-└── notebooks/              # Jupyter notebooks
-    ├── cbir_training.ipynb
-    ├── diet_classifier.ipynb
-    └── downstream.ipynb
-
+- **`data/`**: Datasets and images.
+  - `images/`: 45,582 recipe images (256x256, RGB).
+  - `image_list_aug.csv` & `image_list.csv`: Image metadata.
+  - `images-20250401T1911132-001.zip`: Zipped image archive.
+  - `recipes_classified.csv`: Processed dataset with diet labels (~45K rows).
+  - `recipes.csv`: Raw dataset (~32K rows).
+- **`foodlens/models/`**: Trained models and embeddings.
+  - `autoencoder_model_keras`: Early nutrition classifier (Keras).
+  - `cbir_autoencoder_V2.pth`: CBIR model (PyTorch, ResNet18).
+  - `classifier_model_keras`: Nutrition classifier (Keras).
+  - `embeddings.npy`: Precomputed 128-D embeddings for FAISS.
+- **`foodlens/notebooks/`**: Development notebooks.
+  - `cbir_training.ipynb`: Trains the CBIR model.
+  - `data_scraping_processing.ipynb`: Processes and augments data.
+  - `diet_classifier.ipynb`: Trains the diet classifier.
+  - `downstream.ipynb`: Tests end-to-end integration.
+- **`src/`**: Backend and frontend code.
+  - `back-end/`:
+    - `main.py`: FastAPI backend for API endpoints.
+  - `front-end/`:
+    - `index.html`: Frontend UI for image upload.
+    - `script.js`: JavaScript for frontend logic.
+    - `style.css`: CSS styling.
+- **`requirements.txt`**: Python dependencies.
+  
 ## Prerequisites
 
-- **Hardware**: A GPU (e.g., NVIDIA T4, available on Google Colab Pro) is recommended for training and inference.
+- **Hardware**: A GPU (e.g., NVIDIA A100, available on Google Colab Pro) is recommended for training and inference.
 - **Software**:
   - Python 3.8+
   - PyTorch 2.0+ (for CBIR model)
