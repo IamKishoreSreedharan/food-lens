@@ -5,17 +5,28 @@ from torchvision import transforms
 from PIL import Image
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-import os
+import os, io
 from io import BytesIO
 import pandas as pd
 from pathlib import Path
 import torch.nn as nn
 import torch.optim as optim
+# import keras
+from sklearn.preprocessing import MinMaxScaler, LabelEncoder
+from fastapi.middleware.cors import CORSMiddleware
+
+
 app = FastAPI()
 
-# Define base path (move two levels up)
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-print(BASE_DIR)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (change to your frontend URL for security)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
+
+
 # Define the base directory dynamically
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 print(f"BASE_DIR: {BASE_DIR}")
@@ -24,6 +35,11 @@ print(f"BASE_DIR: {BASE_DIR}")
 MODEL_PATH = os.path.join(BASE_DIR, 'models/cbir_autoencoder_V2.pth')
 EMBEDDINGS_PATH = os.path.join(BASE_DIR, 'models/embeddings.npy')
 IMAGE_LIST_PATH = os.path.join(BASE_DIR, 'data/image_list.csv')
+RECIPES_PATH = os.path.join(BASE_DIR, "data/recipes_classified.csv")
+CLASSIFIER_MODEL_PATH = os.path.join(BASE_DIR, "models/classifier_autoencoder.keras")
+IMAGE_DIR = os.path.join(BASE_DIR, "data/images")
+
+df_recipes = pd.read_csv(RECIPES_PATH)
 class ConvAutoencoder_v2(nn.Module):
     def __init__(self):
         super(ConvAutoencoder_v2, self).__init__()
@@ -84,19 +100,14 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = ConvAutoencoder_v2().to(device)
 model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 model.eval()
+# classifier_model = keras.models.load_model(CLASSIFIER_MODEL_PATH)
+# Transformation for input image
+transform = transforms.Compose([
+    transforms.Resize((256, 256)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+])
 
-# Transformation for input image
-transform = transforms.Compose([
-    transforms.Resize((256, 256)),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-])
-# Transformation for input image
-transform = transforms.Compose([
-    transforms.Resize((256, 256)),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-])
 # Device configuration
 
 # Function to preprocess the image and get the embedding
@@ -110,9 +121,22 @@ def get_image_embedding(image: Image.Image):
 @app.post("/upload-image/")
 async def upload_image(file: UploadFile = File(...)):
     # Load the image from the uploaded file
-    image_data = await file.read()
-    image = Image.open(BytesIO(image_data))
+    print("[INFO] Loading image...")
+    print(f"[DEBUG] File name: {file.filename}")
 
+    # image_data = await file.read()
+    # Construct the full path
+    image_path = os.path.join(IMAGE_DIR, file.filename)
+
+
+    print(f"[INFO] Loading image from: {image_path}")
+
+    # Read the image from disk
+    with open(image_path, "rb") as image_file:
+        image_data = image_file.read()
+    print("[DEBUG] Image data received")
+    image = Image.open(io.BytesIO(image_data))
+    print("[INFO] Image uploaded successfully")
     # Get the embedding for the uploaded image
     query_embedding = get_image_embedding(image)
 
@@ -123,6 +147,47 @@ async def upload_image(file: UploadFile = File(...)):
     # Get the similar images
     similar_images = df_image_list.iloc[top_indices]
 
-    # Return the top similar images
-    results = similar_images[['filename', 'full_path']].to_dict(orient='records')
-    return {"similar_images": results}
+    # Define the correct image directory
+    
+    print(f"IMAGE_DIR: {IMAGE_DIR}")
+    
+    # Construct the full image paths
+    results = [
+        {
+            "filename": row["filename"],
+            "full_path": os.path.join(IMAGE_DIR, row["filename"])  # Ensure correct local path
+        }
+        for _, row in similar_images.iterrows()
+        if os.path.exists(os.path.join(IMAGE_DIR, row["filename"]))  # Check if file exists
+    ]
+    # Get the first image filename (without extension)
+    first_image_filename = results[0]["filename"].replace(".jpg", "")
+
+    # Fetch the corresponding recipe
+    df_recipe_gotten = df_recipes[df_recipes["recipe_id"] == first_image_filename]
+    # features = ['calories', 'carbohydrates_g', 'sugars_g', 'fat_g', 'protein_g']
+    # class_list = ['Balanced', 'HCLF', 'HPLC', 'Junk', 'LCHF', 'LCHFib']
+    # # Recreate MinMaxScaler using df_recipe_list (assuming similar range as training data)
+    # # Recreate MinMaxScaler using df_recipe_list (assuming similar range as training data)
+    # scaler = MinMaxScaler()
+    # X_normalized = scaler.fit_transform(df_recipe_gotten[features])  # Fit on available data
+
+    # # Reshape for CNN input (samples, height=1, width=5, channels=1)
+    # X_image = X_normalized.reshape(-1, 1, 5, 1)
+    # le = LabelEncoder()
+    # le.fit(class_list)  # Fit with known labels
+
+
+    # # Make predictions
+    # predictions = model.predict(X_image)
+
+    # # Convert softmax probabilities to class labels
+    # predicted_classes = le.inverse_transform(predictions.argmax(axis=1))
+
+    # # Add predictions to df_recipe_list
+    # df_recipe_gotten['predicted_diet'] = predicted_classes
+    print("[INFO] Similar images and recipe details fetched successfully")
+    return {
+        "similar_images": results,
+        "recipe_details": df_recipe_gotten.to_dict(orient="records")  # Return recipe details
+    }

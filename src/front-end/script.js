@@ -4,7 +4,7 @@ async function analyzeImage() {
     formData.append("image", input.files[0]);
 
     // Make a POST request to the back-end FastAPI server
-    let response = await fetch('http://localhost:5000/analyze/', {
+    let response = await fetch('http://localhost:8000/upload-image/', {
         method: 'POST',
         body: formData
     });

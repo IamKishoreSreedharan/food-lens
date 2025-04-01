@@ -3,18 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FoodLens</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Food Lens - Similar Recipes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .card {
+            margin-bottom: 30px;
+        }
+        .card-img-top {
+            height: 250px;
+            object-fit: cover;
+        }
+        .recipe-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .recipe-ingredients, .recipe-directions {
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .nutrition {
+            font-size: 1rem;
+            color: #007bff;
+        }
+        .btn-view-recipe {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        .btn-view-recipe:hover {
+            background-color: #0056b3;
+        }
+        .btn-upload {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+        .btn-upload:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to FoodLens!</h1>
-        <h3>Upload your food image for analysis:</h3>
-        <input type="file" id="imageUpload" accept="image/*">
-        <button onclick="analyzeImage()">Analyze</button>
-        <div id="result"></div>
+
+<div class="container">
+    <h2 class="text-center mb-5">Similar Recipes Based on Your Image</h2>
+
+    <!-- Button to trigger upload modal -->
+    <div class="text-center mb-4">
+        <button class="btn btn-upload" data-bs-toggle="modal" data-bs-target="#uploadModal">Upload Image</button>
     </div>
 
-    <script src="script.js"></script>
+    <div class="row" id="imageResults">
+        <!-- Recipe Cards will be dynamically injected here -->
+    </div>
+
+    <!-- Modal for Recipe Details -->
+    <div class="modal fade" id="recipeModal" tabindex="-1" aria-labelledby="recipeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="recipeModalLabel">Recipe Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="recipeDetails">
+                    <!-- Recipe details will be dynamically injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Upload -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadModalLabel">Upload an Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="file" id="imageUpload" accept="image/*" class="form-control">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="uploadImage()">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script>
+    // Function to render image and recipe details
+    function renderRecipeCards(similarImages, recipeDetails) {
+        const imageResults = document.getElementById('imageResults');
+
+        similarImages.forEach((image, index) => {
+            const recipe = recipeDetails[index];
+
+            const card = document.createElement('div');
+            card.classList.add('col-md-4');
+            card.classList.add('card');
+
+            card.innerHTML = `
+                <img src="${image.full_path}" class="card-img-top" alt="${image.filename}">
+                <div class="card-body">
+                    <h5 class="recipe-title">${recipe.title}</h5>
+                    <p class="recipe-ingredients">Ingredients: ${recipe.ingredients}</p>
+                    <p class="recipe-directions">Directions: ${recipe.directions}</p>
+                    <p class="nutrition">
+                        Calories: ${recipe.calories} | Carbs: ${recipe.carbohydrates_g}g | Sugars: ${recipe.sugars_g}g | Fat: ${recipe.fat_g}g | Protein: ${recipe.protein_g}g
+                    </p>
+                    <button class="btn btn-view-recipe" data-bs-toggle="modal" data-bs-target="#recipeModal" onclick="showRecipeDetails(${index})">View Recipe</button>
+                </div>
+            `;
+
+            imageResults.appendChild(card);
+        });
+    }
+
+    // Function to display full recipe details in a modal
+    function showRecipeDetails(index) {
+        const recipe = recipeDetails[index];
+
+        const recipeDetailsModal = document.getElementById('recipeDetails');
+        recipeDetailsModal.innerHTML = `
+            <h5 class="recipe-title">${recipe.title}</h5>
+            <h6>Ingredients:</h6>
+            <p>${recipe.ingredients}</p>
+            <h6>Directions:</h6>
+            <p>${recipe.directions}</p>
+            <h6>Nutrition Information:</h6>
+            <ul>
+                <li>Calories: ${recipe.calories}</li>
+                <li>Carbs: ${recipe.carbohydrates_g}g</li>
+                <li>Sugars: ${recipe.sugars_g}g</li>
+                <li>Fat: ${recipe.fat_g}g</li>
+                <li>Protein: ${recipe.protein_g}g</li>
+            </ul>
+            <h6>Time: ${recipe.prep_time} (Prep), ${recipe.cook_time} (Cook)</h6>
+            <a href="${recipe.url}" target="_blank" class="btn btn-primary">Go to Recipe</a>
+        `;
+    }
+
+    // Function to upload image and fetch details
+    function uploadImage() {
+        const imageUpload = document.getElementById('imageUpload');
+        const file = imageUpload.files[0];
+
+        if (file) {
+            const formData = new FormData();
+            formData.append("file", file);  // Changed from "image" to "file"
+
+            fetch('http://127.0.0.1:8000/upload-image/', {
+                method: 'POST',
+                body: formData,
+                // Don't set Content-Type header - let the browser set it automatically
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Upload successful:", data);
+                renderRecipeCards(data.similar_images, data.recipe_details);
+                const uploadModal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
+                uploadModal.hide();
+            })
+            .catch(error => {
+                console.error("Error uploading image:", error);
+                alert("Error uploading image: " + error.message);
+            });
+        } else {
+            alert("Please select an image first.");
+        }
+    }
+</script>
 </body>
 </html>
