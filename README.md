@@ -1,40 +1,88 @@
-# FoodLens
+Apologies for the confusion earlier. Here's the `README.md` code you can copy directly:
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/) [![PyTorch](https://img.shields.io/badge/PyTorch-1.9+-orange.svg)](https://pytorch.org/) [![Colab](https://img.shields.io/badge/Google%20Colab-Pro-green.svg)](https://colab.research.google.com/)
+```markdown
+# Food Lens - Recipe Recommendation System
 
-## Overview
-
-**FoodLens** is an innovative machine learning project that combines **Content-Based Image Retrieval (CBIR)** and **diet-level classification** to analyze a dataset of approximately 45,000 recipe images. Each image, sized at 256x256 pixels, is labeled with one of six dietary categories: Low-Calorie High-Fiber (LCHFib), Junk, Balanced, High-Protein Low-Carb (HPLC), Low-Carb High-Fat (LCHF), and High-Carb Low-Fat (HCLF). The system leverages a hybrid autoencoder to (1) retrieve visually similar recipes and (2) classify their dietary profiles, offering a dual-purpose tool for culinary and health-focused applications.
-
-Built on PyTorch and accelerated with Google Colab Pro, FoodLens uses `CBIRCAutoEncoder_v2`, a custom autoencoder with a pretrained ResNet18 encoder, to extract a 128-dimensional latent representation. This powers both CBIR (via Euclidean distance or FAISS) and classification (6-class logits). Initial training with 2 epochs yielded 27% accuracy, but ongoing efforts target 60–70% with 20 epochs. The project also integrates reconstruction error metrics inspired by "Class-wise Autoencoders Measure Classification Difficulty And Detect Label Mistakes" to diagnose class difficulty and detect potential mislabels.
+Food Lens is an AI-powered recipe recommendation system that suggests similar recipes based on an uploaded image. By analyzing the image, it retrieves the recipe details and provides nutritional information, preparation instructions, and the link to the original recipe.
 
 ## Features
-- **CBIR**: Retrieve the top-5 visually similar recipe images from the dataset.
-- **Diet Classification**: Predict dietary categories with a hybrid autoencoder.
-- **Pretrained Backbone**: ResNet18 encoder for robust feature extraction.
-- **Scalable**: Handles 45K images with Colab Pro’s GPU (T4/P100) and 32 GB RAM.
-- **Diagnostics**: Reconstruction error analysis for performance insights.
 
-## Getting Started
-1. **Clone the Repo**: `git clone `
-2. **Install Dependencies**: `pip install -r requirements.txt`
-3. **Run in Colab**: Upload the Jupyter notebook and dataset to Google Colab Pro.
-4. **Train**: Execute the training loop (20 epochs recommended).
-5. **Evaluate**: Check classification accuracy and CBIR results.
+- **Image Upload**: Upload an image of a dish to get similar recipe suggestions.
+- **Recipe Details**: View detailed information about each recommended recipe, including ingredients, preparation steps, nutritional values, and more.
+- **Nutrition Breakdown**: Get detailed nutritional breakdown for each recipe (calories, carbs, fat, protein, etc.).
+- **Recipe Instructions**: View the full recipe with step-by-step cooking instructions.
+  
+## Prerequisites
 
-## Dataset
-- **Size**: ~45,582 RGB images, 256x256 resolution.
-- **Classes**: 6 balanced diet categories.
-- **Source**: Custom recipe image collection (stored at `/MyDrive/project/data.recipe.csv`).
+- Python 3.x
+- FastAPI (for backend)
+- JavaScript (for frontend)
+- Bootstrap 5 (for styling)
 
-## Progress
-- **Training**: 2 epochs completed (27% accuracy); 20 epochs in progress.
-- **Next Steps**: Full inference, CBIR visualization, and report finalization (due in 3 days!).
+## Setup Instructions
+
+### Backend
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-username/food-lens.git
+   cd food-lens
+   ```
+
+2. **Create a virtual environment** (optional but recommended):
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # For Linux/Mac
+   venv\Scripts\activate     # For Windows
+   ```
+
+3. **Install the required dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run the FastAPI server**:
+   ```bash
+   uvicorn app.main:app --reload
+   ```
+
+   The FastAPI backend should now be running at `http://127.0.0.1:8000`.
+
+### Frontend
+
+1. **Navigate to the `frontend` folder** (if applicable):
+   ```bash
+   cd frontend
+   ```
+
+2. **Open the `index.html` file in a browser**:
+   - This is a simple static page that allows you to upload an image and get similar recipe recommendations.
+
+### How It Works
+
+- **Image Upload**: 
+  - The user uploads an image of a dish, and the system sends the image to the backend.
+  - The backend processes the image and uses machine learning models to find similar recipes based on image features.
+  - The backend returns a list of similar recipes with their details, which are then displayed in the frontend.
+  
+- **Recipe Details**: 
+  - Each recipe includes the title, ingredients, directions, nutritional values (calories, carbs, fat, protein), and a link to the full recipe.
+
+## Folder Structure
+
+```
+/food-lens
+    /app
+        main.py        # FastAPI backend
+        models.py      # Machine learning model for image analysis
+    /frontend
+        index.html     # Static HTML page for image upload
+        /css
+        /js
+    requirements.txt   # List of dependencies for the backend
+```
 
 ## License
-MIT License—feel free to fork and tweak!
 
-## Acknowledgments
-- Built with ❤️ in a 3-day sprint.
-- Inspired by "Class-wise Autoencoders" paper for error metrics.
-- Powered by Colab Pro’s GPU muscle.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+```
