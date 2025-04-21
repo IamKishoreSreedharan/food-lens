@@ -165,27 +165,26 @@ async def upload_image(file: UploadFile = File(...)):
 
     # Fetch the corresponding recipe
     df_recipe_gotten = df_recipes[df_recipes["recipe_id"] == first_image_filename]
-    # features = ['calories', 'carbohydrates_g', 'sugars_g', 'fat_g', 'protein_g']
-    # class_list = ['Balanced', 'HCLF', 'HPLC', 'Junk', 'LCHF', 'LCHFib']
-    # # Recreate MinMaxScaler using df_recipe_list (assuming similar range as training data)
-    # # Recreate MinMaxScaler using df_recipe_list (assuming similar range as training data)
-    # scaler = MinMaxScaler()
-    # X_normalized = scaler.fit_transform(df_recipe_gotten[features])  # Fit on available data
+    features = ['calories', 'carbohydrates_g', 'sugars_g', 'fat_g', 'protein_g']
+    class_list = ['Balanced', 'HCLF', 'HPLC', 'Junk', 'LCHF', 'LCHFib']
 
-    # # Reshape for CNN input (samples, height=1, width=5, channels=1)
-    # X_image = X_normalized.reshape(-1, 1, 5, 1)
-    # le = LabelEncoder()
-    # le.fit(class_list)  # Fit with known labels
+    # MinMaxScaler using df_recipe_list (assuming similar range as training data)
+    scaler = MinMaxScaler()
+    X_normalized = scaler.fit_transform(df_recipe_gotten[features])  # Fit on available data
 
+    # Reshape for CNN input (samples, height=1, width=5, channels=1)
+    X_image = X_normalized.reshape(-1, 1, 5, 1)
+    le = LabelEncoder()
+    le.fit(class_list)  # Fit with known labels
 
-    # # Make predictions
-    # predictions = model.predict(X_image)
+    # Make predictions
+    predictions = model.predict(X_image)
 
-    # # Convert softmax probabilities to class labels
-    # predicted_classes = le.inverse_transform(predictions.argmax(axis=1))
+    # Convert softmax probabilities to class labels
+    predicted_classes = le.inverse_transform(predictions.argmax(axis=1))
 
-    # # Add predictions to df_recipe_list
-    # df_recipe_gotten['predicted_diet'] = predicted_classes
+    # Add predictions to df_recipe_list
+    df_recipe_gotten['predicted_diet'] = predicted_classes
     print("[INFO] Similar images and recipe details fetched successfully")
     return {
         "similar_images": results,
